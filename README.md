@@ -33,7 +33,7 @@ Make sure these files are properly configured and in place before running the ap
 1. Ensure the virtual environment is activated.
 2. Run the application using the following command:
     ```sh
-    python main.py
+    python manage.py
     ```
 
 This will start the application.
