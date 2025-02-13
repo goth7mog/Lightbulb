@@ -8,7 +8,7 @@
 
 2. Create a virtual environment:
     ```sh
-    py -3.10 -m venv .venv
+    py -3 -m venv .venv
     ```
 
 3. Activate the virtual environment:
