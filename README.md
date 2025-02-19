@@ -1,39 +1,121 @@
-# Setting up Lightbulb (BU Banking)
+# Lightbulb Project
 
-## Setup Virtual Environment
-1. Navigate to the project directory:
-    ```sh
-    cd /path/to/your/project
-    ```
+A Django-based web application containerized with Docker.
 
-2. Create a virtual environment:
-    ```sh
-    py -3 -m venv .venv
-    ```
+## Prerequisites
 
-3. Activate the virtual environment:
-    - On Windows:
-        ```sh
-        .venv\Scripts\activate
-        ```
-    - On macOS/Linux:
-        ```sh
-        source .venv/bin/activate
-        ```
+- Docker
+- Docker Compose
 
-## Install Requirements
-1. Ensure the virtual environment is activated, then install the required packages:
-    ```sh
-    pip install -r requirements.txt
-    ```
+## Quick Start
 
-Make sure these files are properly configured and in place before running the application.
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd Lightbulb
+```
 
-## Running the Application
-1. Ensure the virtual environment is activated.
-2. Run the application using the following command:
-    ```sh
-    python manage.py
-    ```
+2. Build and run the containers:
+```bash
+docker-compose up --build
+```
 
-This will start the application.
+3. Access the application at:
+```
+http://localhost:8000
+```
+
+## Project Structure
+
+```
+Lightbulb/
+├── Dockerfile
+├── docker-compose.yml
+├── manage.py
+└── requirements.txt
+```
+
+## Environment Variables
+
+The following environment variables can be adjusted in docker-compose.yml:
+
+- `DEBUG`: Set to 1 for development
+- `POSTGRES_DB`: Database name
+- `POSTGRES_USER`: Database user
+- `POSTGRES_PASSWORD`: Database password
+
+## Dockerization
+
+This project is containerized using Docker and Docker Compose for easy deployment and development.
+
+### Docker Configuration
+
+The project uses two main Docker configurations:
+
+1. `Dockerfile`: Builds the Python/Django application image
+   - Uses Python 3.9 slim base image
+   - Installs system and Python dependencies
+   - Sets up the application environment
+   - Exposes port 8000 for the Django development server
+
+2. `docker-compose.yml`: Orchestrates the application services
+   - `web`: Django application service
+     - Builds from Dockerfile
+     - Maps port 8000
+     - Mounts code for development
+     - Connects to PostgreSQL
+   - `db`: PostgreSQL database service
+     - Uses PostgreSQL 13
+     - Persists data using Docker volumes
+     - Configurable through environment variables
+
+### Docker Commands
+
+Common Docker operations:
+
+```bash
+# Build and start services
+docker-compose up --build
+
+# Run in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Remove volumes (caution: deletes database data)
+docker-compose down -v
+```
+
+### Database Management
+
+When using Docker:
+```bash
+# Run migrations
+docker-compose exec web python manage.py migrate
+
+# Create superuser
+docker-compose exec web python manage.py createsuperuser
+
+# Access PostgreSQL shell
+docker-compose exec db psql -U postgres -d lightbulb
+```
+
+## Development
+
+To run migrations:
+```bash
+docker-compose exec web python manage.py migrate
+```
+
+To create a superuser:
+```bash
+docker-compose exec web python manage.py createsuperuser
+```
+
+## License
+
+[Your chosen license]
