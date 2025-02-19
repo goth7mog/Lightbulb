@@ -8,9 +8,8 @@ services:
       - .:/app
     ports:
       - "8000:8000"
-    environment:
-      - DEBUG=1
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/lightbulb
+    env_file:
+      - .env
     depends_on:
       - db
 
@@ -18,10 +17,8 @@ services:
     image: postgres:13
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=lightbulb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+    env_file:
+      - .env
 
 volumes:
   postgres_data:
