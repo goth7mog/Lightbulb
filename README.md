@@ -22,22 +22,14 @@ docker-compose up --build
 
 3. Access the application at:
 ```
-http://localhost:8000
-```
-
-## Project Structure
-
-```
-Lightbulb/
-├── Dockerfile
-├── docker-compose.yml
-├── manage.py
-└── requirements.txt
+http://127.0.0.1:8001 or localhost:8001
+http://127.0.0.1:8001/api
+http://127.0.0.1:8001/api/swagger
 ```
 
 ## Environment Variables
 
-The following environment variables can be adjusted in docker-compose.yml:
+The following environment variables can be adjusted in .env:
 
 - `DEBUG`: Set to 1 for development
 - `POSTGRES_DB`: Database name
@@ -53,15 +45,14 @@ This project is containerized using Docker and Docker Compose for easy deploymen
 The project uses two main Docker configurations:
 
 1. `Dockerfile`: Builds the Python/Django application image
-   - Uses Python 3.9 slim base image
+   - Uses Python 3.12 slim base image
    - Installs system and Python dependencies
    - Sets up the application environment
-   - Exposes port 8000 for the Django development server
 
 2. `docker-compose.yml`: Orchestrates the application services
    - `web`: Django application service
      - Builds from Dockerfile
-     - Maps port 8000
+     - Maps container's internal port 8000 to outside 8001
      - Mounts code for development
      - Connects to PostgreSQL
    - `db`: PostgreSQL database service
@@ -74,20 +65,17 @@ The project uses two main Docker configurations:
 Common Docker operations:
 
 ```bash
-# Build and start services
-docker-compose up --build
+# Build and start containers 
+docker-compose up --build # (--build - for the first time then just 'docker-compose up' for the consecutive runs)
 
 # Run in detached mode
 docker-compose up -d
 
-# View logs
-docker-compose logs -f
+# [Important] Check the status of your containers
+docker ps
 
-# Stop services
+# Stop and delete the containers
 docker-compose down
-
-# Remove volumes (caution: deletes database data)
-docker-compose down -v
 ```
 
 ### Database Management
@@ -95,10 +83,10 @@ docker-compose down -v
 When using Docker:
 ```bash
 # Run migrations
-docker-compose exec web python manage.py migrate
+docker-compose exec web python3 manage.py migrate
 
 # Create superuser
-docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python3 manage.py createsuperuser
 
 # Access PostgreSQL shell
 docker-compose exec db psql -U postgres -d lightbulb
@@ -108,13 +96,14 @@ docker-compose exec db psql -U postgres -d lightbulb
 
 To run migrations:
 ```bash
-docker-compose exec web python manage.py migrate
+docker-compose exec web python3 manage.py migrate
 ```
 
 To create a superuser:
 ```bash
-docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python3 manage.py createsuperuser
 ```
+
 
 ## License
 
