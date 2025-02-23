@@ -22,9 +22,9 @@ docker-compose up --build
 
 3. Access the application at:
 ```
-http://127.0.0.1:8001 or localhost:8001
-http://127.0.0.1:8001/api
-http://127.0.0.1:8001/api/swagger
+http://127.0.0.1:80 or localhost:80
+http://127.0.0.1:80/api
+http://127.0.0.1:80/api/swagger
 ```
 
 ## Environment Variables
@@ -36,29 +36,54 @@ The following environment variables can be adjusted in .env:
 - `POSTGRES_USER`: Database user
 - `POSTGRES_PASSWORD`: Database password
 
+## Architecture
+
+The project uses a three-tier architecture:
+- Nginx: Reverse proxy
+- Django: Application server (Gunicorn)
+- PostgreSQL: Database
+
+### About Gunicorn
+
+Gunicorn ("Green Unicorn") is a Python WSGI HTTP Server for UNIX used to serve Python web applications. It:
+- Acts as a bridge between Nginx and Django
+- Handles Python application processes
+- Manages worker processes for better performance
+- Is more robust than Django's development server
+- Recommended for production deployments
+
 ## Dockerization
 
 This project is containerized using Docker and Docker Compose for easy deployment and development.
 
 ### Docker Configuration
 
-The project uses two main Docker configurations:
+The project uses three main Docker configurations:
 
 1. `Dockerfile`: Builds the Python/Django application image
    - Uses Python 3.12 slim base image
    - Installs system and Python dependencies
    - Sets up the application environment
+   - Runs Gunicorn as the application server
 
 2. `docker-compose.yml`: Orchestrates the application services
    - `web`: Django application service
      - Builds from Dockerfile
-     - Maps container's internal port 8000 to outside 8001
+     - Runs on internal port 8000
      - Mounts code for development
-     - Connects to PostgreSQL
    - `db`: PostgreSQL database service
      - Uses PostgreSQL 13
      - Persists data using Docker volumes
-     - Configurable through environment variables
+   - `nginx`: Web server service
+     - Handles incoming requests on port 80
+     - Proxies requests to Django application
+
+### Nginx Configuration
+
+Nginx serves as a reverse proxy and handles:
+- Load balancing
+- Request forwarding to Django application
+- Simple and efficient request handling
 
 ### Docker Commands
 
