@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banking-app-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: banking-app-web
+  template:
+    metadata:
+      labels:
+        app: banking-app-web
+    spec:
+      containers:
+      - name: web
+        image: lightbulb-web:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: lightbulb-config
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"

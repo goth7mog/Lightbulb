@@ -3,6 +3,7 @@ FROM python:3.12-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV PORT 8000
 
 # Set work directory
 WORKDIR /app
@@ -14,16 +15,13 @@ RUN apt-get update && \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
-
-# Install gunicorn
-RUN pip3 install gunicorn
+RUN pip3 install --no-cache-dir -r requirements.txt gunicorn
 
 # Copy project
 COPY . .
 
 # Expose port
-EXPOSE 8000
+EXPOSE $PORT
 
 # Run application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "your_project_name.wsgi:application"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "your_project_name.wsgi:application"]

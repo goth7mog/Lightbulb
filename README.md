@@ -1,11 +1,12 @@
-# Lightbulb Project
+# Banking App Project
 
-A Django-based web application containerized with Docker.
+A Django-based banking web application deployed on Kubernetes.
 
 ## Prerequisites
 
+- Kubernetes cluster (Docker Desktop Kubernetes)
+- kubectl
 - Docker
-- Docker Compose
 
 ## Quick Start
 
@@ -15,21 +16,24 @@ git clone <repository-url>
 cd Lightbulb
 ```
 
-2. Build and run the containers:
+2. Build the local image:
 ```bash
-docker-compose up --build
+docker build -t lightbulb-web:latest .
 ```
 
-3. Access the application at:
+3. Deploy to Kubernetes:
+```bash
+kubectl apply -f k8s/
 ```
-http://127.0.0.1:80 or localhost:80
-http://127.0.0.1:80/api
-http://127.0.0.1:80/api/swagger
-```
+
+4. Access the application:
+   - Open http://localhost:80 in your browser
+   - API available at http://localhost:80/api
+   - Swagger UI at http://localhost:80/api/swagger
 
 ## Environment Variables
 
-The following environment variables can be adjusted in .env:
+The following environment variables are configured in Kubernetes ConfigMap:
 
 - `DEBUG`: Set to 1 for development
 - `POSTGRES_DB`: Database name
@@ -52,31 +56,13 @@ Gunicorn ("Green Unicorn") is a Python WSGI HTTP Server for UNIX used to serve P
 - Is more robust than Django's development server
 - Recommended for production deployments
 
-## Dockerization
+## Container Configuration
 
-This project is containerized using Docker and Docker Compose for easy deployment and development.
-
-### Docker Configuration
-
-The project uses three main Docker configurations:
-
-1. `Dockerfile`: Builds the Python/Django application image
-   - Uses Python 3.12 slim base image
-   - Installs system and Python dependencies
-   - Sets up the application environment
-   - Runs Gunicorn as the application server
-
-2. `docker-compose.yml`: Orchestrates the application services
-   - `web`: Django application service
-     - Builds from Dockerfile
-     - Runs on internal port 8000
-     - Mounts code for development
-   - `db`: PostgreSQL database service
-     - Uses PostgreSQL 13
-     - Persists data using Docker volumes
-   - `nginx`: Web server service
-     - Handles incoming requests on port 80
-     - Proxies requests to Django application
+The project uses a Dockerfile to build the Django application image:
+- Uses Python 3.12 slim base image
+- Installs system and Python dependencies
+- Sets up the application environment
+- Runs Gunicorn as the application server
 
 ### Nginx Configuration
 
@@ -85,50 +71,47 @@ Nginx serves as a reverse proxy and handles:
 - Request forwarding to Django application
 - Simple and efficient request handling
 
-### Docker Commands
+## Kubernetes Configuration
 
-Common Docker operations:
+The application is deployed using several Kubernetes resources:
+- Deployments for web, database, and nginx
+- Services for networking
+- ConfigMaps for configuration
+- PersistentVolumeClaim for database storage
+
+### Common kubectl Commands
 
 ```bash
-# Build and start containers 
-docker-compose up --build # (--build - for the first time then just 'docker-compose up' for the consecutive runs)
+# View all resources
+kubectl get all
 
-# Run in detached mode
-docker-compose up -d
+# Check pod logs
+kubectl logs <pod-name>
 
-# [Important] Check the status of your containers
-docker ps
+# Scale deployment
+kubectl scale deployment banking-app-web --replicas=5
 
-# Stop and delete the containers
-docker-compose down
-```
-
-### Database Management
-
-When using Docker:
-```bash
-# Run migrations
-docker-compose exec web python3 manage.py migrate
+# Apply database migrations
+kubectl exec -it <web-pod-name> -- python manage.py migrate
 
 # Create superuser
-docker-compose exec web python3 manage.py createsuperuser
+kubectl exec -it <web-pod-name> -- python manage.py createsuperuser
 
 # Access PostgreSQL shell
-docker-compose exec db psql -U postgres -d lightbulb
+kubectl exec -it <db-pod-name> -- psql -U postgres -d banking-app
 ```
 
 ## Development
 
 To run migrations:
 ```bash
-docker-compose exec web python3 manage.py migrate
+kubectl exec -it <web-pod-name> -- python manage.py migrate
 ```
 
 To create a superuser:
 ```bash
-docker-compose exec web python3 manage.py createsuperuser
+kubectl exec -it <web-pod-name> -- python manage.py createsuperuser
 ```
-
 
 ## License
 
