@@ -14,13 +14,13 @@ spec:
     spec:
       containers:
       - name: web
-        image: lightbulb-web:latest
+        image: banking-app-web:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 8000
         envFrom:
         - configMapRef:
-            name: lightbulb-config
+            name: banking-app-config
         resources:
           limits:
             memory: "512Mi"
