@@ -116,7 +116,12 @@ This project includes a complete CI/CD environment with Jenkins, Harbor Registry
 
 ### Starting CI/CD Environment
 
-1. Start the CI/CD services:
+1. Navigate to CI/CD directory:
+```bash
+cd CI/CD
+```
+
+2. Start the CI/CD services:
 ```bash
 docker-compose -f docker-compose-jenkins.yaml up -d
 ```
@@ -141,16 +146,16 @@ docker-compose -f docker-compose-jenkins.yaml down
 
 ```bash
 # Check services status
-docker-compose -f docker-compose-jenkins.yaml ps
+cd CI/CD && docker-compose -f docker-compose-jenkins.yaml ps
 
 # View logs
-docker-compose -f docker-compose-jenkins.yaml logs -f [service_name]
+cd CI/CD && docker-compose -f docker-compose-jenkins.yaml logs -f [service_name]
 
 # Restart specific service
-docker-compose -f docker-compose-jenkins.yaml restart [service_name]
+cd CI/CD && docker-compose -f docker-compose-jenkins.yaml restart [service_name]
 
 # Clean up everything including volumes
-docker-compose -f docker-compose-jenkins.yaml down -v
+cd CI/CD && docker-compose -f docker-compose-jenkins.yaml down -v
 ```
 
 ## License
