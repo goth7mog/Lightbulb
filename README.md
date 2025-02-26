@@ -104,6 +104,54 @@ To create a superuser:
 docker-compose exec web python3 manage.py createsuperuser
 ```
 
+## CI/CD Environment
+
+This project includes a complete CI/CD environment with Jenkins, Harbor Registry, SonarQube, and Anchore Engine.
+
+### Prerequisites for CI/CD
+- Docker
+- Docker Compose
+- At least 8GB of free RAM
+- 20GB of free disk space
+
+### Starting CI/CD Environment
+
+1. Start the CI/CD services:
+```bash
+docker-compose -f docker-compose-jenkins.yaml up -d
+```
+
+2. Access the services:
+- Jenkins: http://localhost:8080
+  - Initial admin password: `docker-compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword`
+- Harbor Registry: http://localhost:8081
+  - Default credentials: admin/Harbor12345
+- SonarQube: http://localhost:9000
+  - Default credentials: admin/admin
+- Anchore Engine: http://localhost:8228
+  - API endpoint for vulnerability scanning
+
+### Stopping CI/CD Environment
+
+```bash
+docker-compose -f docker-compose-jenkins.yaml down
+```
+
+### Common CI/CD Commands
+
+```bash
+# Check services status
+docker-compose -f docker-compose-jenkins.yaml ps
+
+# View logs
+docker-compose -f docker-compose-jenkins.yaml logs -f [service_name]
+
+# Restart specific service
+docker-compose -f docker-compose-jenkins.yaml restart [service_name]
+
+# Clean up everything including volumes
+docker-compose -f docker-compose-jenkins.yaml down -v
+```
 
 ## License
 
