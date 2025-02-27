@@ -78,7 +78,7 @@ docker ps
 docker-compose down
 ```
 
-### Database Management
+### Development
 
 When using Docker:
 ```bash
@@ -92,29 +92,15 @@ docker-compose exec web python3 manage.py createsuperuser
 docker-compose exec db psql -U postgres -d lightbulb
 ```
 
-## Development
 
-To run migrations:
-```bash
-docker-compose exec web python3 manage.py migrate
-```
 
-To create a superuser:
-```bash
-docker-compose exec web python3 manage.py createsuperuser
-```
 
-## CI/CD Environment
 
-This project includes a complete CI/CD environment with Jenkins, Harbor Registry, SonarQube, and Anchore Engine.
+###   ------------       CI/CD Environment      ----------------   ###
 
-### Prerequisites for CI/CD
-- Docker
-- Docker Compose
-- At least 8GB of free RAM
-- 20GB of free disk space
+CI/CD environment with Jenkins, Harbor Registry, SonarQube, and Anchore Engine.
 
-### Starting CI/CD Environment
+## Starting CI/CD Environment
 
 1. Navigate to CI/CD directory:
 ```bash
@@ -128,11 +114,14 @@ docker-compose -f docker-compose-jenkins.yaml up -d
 
 2. Access the services:
 - Jenkins: http://localhost:8080
-  - Initial admin password: `docker-compose exec jenkinspython cat /var/jenkins_home/secrets/initialAdminPassword`
+  - Initial admin password: `docker exec -it jenkins bash` -> `cat /var/jenkins_home/secrets/initialAdminPassword`
+
 - Harbor Registry: http://localhost:8081
   - Default credentials: admin/Harbor12345
+
 - SonarQube: http://localhost:9000
   - Default credentials: admin/admin
+
 - Anchore Engine: http://localhost:8228
   - API endpoint for vulnerability scanning
 
@@ -142,21 +131,15 @@ docker-compose -f docker-compose-jenkins.yaml up -d
 docker-compose -f docker-compose-jenkins.yaml down
 ```
 
-### Common CI/CD Commands
 
-```bash
-# Check services status
-cd CI/CD && docker-compose -f docker-compose-jenkins.yaml ps
 
-# View logs
-cd CI/CD && docker-compose -f docker-compose-jenkins.yaml logs -f [service_name]
-
-# Restart specific service
-cd CI/CD && docker-compose -f docker-compose-jenkins.yaml restart [service_name]
-
-# Clean up everything including volumes
-cd CI/CD && docker-compose -f docker-compose-jenkins.yaml down -v
-```
+## Create a Jenkins build
+  New Item -> Multibranch Pipeline ->
+  1) Branch Sources (Add source - Single repository & branch, Source Code Management - Git, Repository URL - <github url>, Credentials - Add - Jenkins - Kind (SSH Username with private key), Username - git, Private Key - your private ssh key, Branches to build - Branch Specifier - */main, Repository Browser - Auto, Property strategy - All branches get the same properties)
+  2) Build Configuration (Mode - by Jenkinsfile, Script Path - Jenkinsfile)
+  3) Scan Multibranch Pipeline Triggers (Periodically if not otherwise run, Interval - <your value>)
+  4) Save
+  5) Check for Console output logs
 
 ## License
 
