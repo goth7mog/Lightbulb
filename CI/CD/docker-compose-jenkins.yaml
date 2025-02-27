@@ -3,10 +3,11 @@ version: "3.8"
 services:
   # Jenkins: the CI/CD server that will build your image when changes are merged.
   jenkins:
-    image: jenkins/jenkins:lts
+    build: .
+    image: jenkinspython
     container_name: jenkins
     ports:
-      - "8080:8080"   # Jenkins UI
+      - "8080:8080" # Jenkins UI
       - "50000:50000" # Jenkins agent port
     volumes:
       - jenkins_home:/var/jenkins_home
@@ -27,8 +28,7 @@ services:
     networks:
       cicd-net:
         aliases:
-          - postgresql  # Added alias so Harbor core can resolve "postgresql"
-
+          - postgresql # Added alias so Harbor core can resolve "postgresql"
 
   # Harbor Core: The main Harbor API server.
   harbor-core:
@@ -110,6 +110,7 @@ volumes:
   sonarqube_data:
   sonarqube_extensions:
   anchore_db_data:
+
 
 networks:
   cicd-net:

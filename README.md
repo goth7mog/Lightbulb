@@ -128,7 +128,7 @@ docker-compose -f docker-compose-jenkins.yaml up -d
 
 2. Access the services:
 - Jenkins: http://localhost:8080
-  - Initial admin password: `docker-compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword`
+  - Initial admin password: `docker-compose exec jenkinspython cat /var/jenkins_home/secrets/initialAdminPassword`
 - Harbor Registry: http://localhost:8081
   - Default credentials: admin/Harbor12345
 - SonarQube: http://localhost:9000
