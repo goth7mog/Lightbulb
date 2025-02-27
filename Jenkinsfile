@@ -6,6 +6,14 @@ pipeline {
     }
 
     stages {
+        stage('Install System Dependencies') {
+            steps {
+                sh '''
+                    apt-get update
+                    apt-get install -y python3.11-venv
+                '''
+            }
+        }
         stage('Checkout') {
             steps {
                 checkout scm
