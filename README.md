@@ -47,15 +47,6 @@ The project uses a three-tier architecture:
 - Django: Application server (Gunicorn)
 - PostgreSQL: Database
 
-### About Gunicorn
-
-Gunicorn ("Green Unicorn") is a Python WSGI HTTP Server for UNIX used to serve Python web applications. It:
-- Acts as a bridge between Nginx and Django
-- Handles Python application processes
-- Manages worker processes for better performance
-- Is more robust than Django's development server
-- Recommended for production deployments
-
 ## Container Configuration
 
 The project uses a Dockerfile to build the Django application image:
@@ -111,6 +102,52 @@ kubectl exec -it <web-pod-name> -- python manage.py migrate
 To create a superuser:
 ```bash
 kubectl exec -it <web-pod-name> -- python manage.py createsuperuser
+```
+
+## Monitoring Setup
+
+The application includes Prometheus and Grafana for monitoring:
+
+1. Deploy monitoring namespace and components:
+```bash
+kubectl apply -f k8s/monitoring/namespace.yaml
+kubectl apply -f k8s/monitoring/
+```
+
+2. Access monitoring dashboards:
+   - Prometheus: http://localhost:30090
+   - Grafana: http://localhost:30030
+
+### Grafana Initial Setup
+- Login with:
+  - Username: admin
+  - Password: admin
+- The Prometheus datasource is pre-configured
+- Import dashboard ID 12740 for Django monitoring
+
+### Monitoring Features
+- Application metrics via Prometheus
+- Pre-configured Grafana dashboards
+- Real-time performance monitoring
+- Resource usage tracking
+- Custom metrics for banking operations
+
+### Useful Monitoring Commands
+```bash
+# Check monitoring pods
+kubectl get pods -n monitoring
+
+# View Prometheus logs
+kubectl logs -n monitoring $(kubectl get pods -n monitoring | grep prometheus | awk '{print $1}')
+
+# View Grafana logs
+kubectl logs -n monitoring $(kubectl get pods -n monitoring | grep grafana | awk '{print $1}')
+
+# Port-forward Prometheus (alternative access)
+kubectl port-forward -n monitoring svc/prometheus 9090:9090
+
+# Port-forward Grafana (alternative access)
+kubectl port-forward -n monitoring svc/grafana 3000:3000
 ```
 
 ## License
