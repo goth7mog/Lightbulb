@@ -27,9 +27,9 @@ kubectl apply -f k8s/
 ```
 
 4. Access the application:
-   - Open http://localhost:80 in your browser
-   - API available at http://localhost:80/api
-   - Swagger UI at http://localhost:80/api/swagger
+   - Open http://localhost:30080 in your browser
+   - API available at http://localhost:30080/api
+   - Swagger UI at http://localhost:30080/api/swagger
 
 ## Environment Variables
 
