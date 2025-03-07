@@ -13,6 +13,7 @@ spec:
       labels:
         app: prometheus
     spec:
+      serviceAccountName: prometheus
       containers:
       - name: prometheus
         image: prom/prometheus
@@ -22,15 +23,15 @@ spec:
         ports:
         - containerPort: 9090
         volumeMounts:
-        - name: prometheus-config
+        - name: config-volume
           mountPath: /etc/prometheus
-        - name: prometheus-storage
+        - name: storage-volume
           mountPath: /prometheus
       volumes:
-      - name: prometheus-config
+      - name: config-volume
         configMap:
           name: prometheus-config
-      - name: prometheus-storage
+      - name: storage-volume
         emptyDir: {}
 ---
 apiVersion: v1
@@ -53,3 +54,14 @@ data:
         - source_labels: [__meta_kubernetes_service_name]
           regex: banking-app-web
           action: keep
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+spec:
+  selector:
+    app: prometheus
+  ports:
+  - port: 9090
+    targetPort: 9090
