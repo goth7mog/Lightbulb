@@ -25,6 +25,10 @@ docker build -t lightbulb-web:latest .
 ```bash
 kubectl apply -f k8s/
 ```
+Delete resources:
+```bash
+kubectl delete -f k8s/
+```
 
 4. Access the application:
    - Open http://localhost:30080 in your browser
@@ -112,6 +116,10 @@ The application includes Prometheus and Grafana for monitoring:
 ```bash
 kubectl apply -f k8s/monitoring/namespace.yaml
 kubectl apply -f k8s/monitoring/
+```
+Delete resources:
+```bash
+kubectl delete -f k8s/monitoring/
 ```
 
 2. Access monitoring dashboards:
