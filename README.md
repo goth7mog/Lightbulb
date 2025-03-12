@@ -57,7 +57,6 @@ The project uses a Dockerfile to build the Django application image:
 - Uses Python 3.12 slim base image
 - Installs system and Python dependencies
 - Sets up the application environment
-- Runs Gunicorn as the application server
 
 ### Nginx Configuration
 
