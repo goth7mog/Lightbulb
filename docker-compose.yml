@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    build: bank
     volumes:
       - .:/app
     ports:
@@ -11,6 +11,7 @@ services:
       - .env
     depends_on:
       - db
+    restart: "no"
 
   db:
     image: postgres:13

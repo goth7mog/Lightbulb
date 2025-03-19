@@ -17,7 +17,11 @@ cd Lightbulb
 
 2. Build and run the containers:
 ```bash
-docker-compose up --build
+# Build the Docker image locally first
+docker build -t bank .
+
+# Run it
+docker-compose up
 ```
 
 3. Access the application at:
