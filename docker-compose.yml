@@ -7,12 +7,14 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8001:8000" # Internal 8000 to external 8001
+      - "${BACKEND_PORT}:8000" # Port mapping
     env_file:
       - .env
     depends_on:
       - db
     restart: "no"
+    networks:
+      - banking_network
 
   db:
     image: postgres:13
@@ -20,6 +22,30 @@ services:
       - postgres_data:/var/lib/postgresql/data
     env_file:
       - .env
+    networks:
+      - banking_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" # Explicitly map container port 3000 to host port 3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      # Point to the web service using the Docker service name instead of localhost
+      - VITE_API_URL=http://localhost:${BACKEND_PORT}/api
+    depends_on:
+      - web
+    networks:
+      - banking_network
 
 volumes:
   postgres_data:
+
+
+networks:
+  banking_network:
+    driver: bridge
