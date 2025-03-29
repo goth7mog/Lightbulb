@@ -1,6 +1,7 @@
 # Lightbulb Project
 
-A Django-based web application containerized with Docker.
+BACKEND - Python Django
+FRONTEND - React with Typescript & Vite for local development
 
 ## Prerequisites
 
@@ -21,14 +22,31 @@ cd Lightbulb
 docker build -t bank .
 
 # Run it
-docker-compose up
+docker-compose up --build
 ```
 
-3. Access the application at:
+3. Then run:
+```bash
+# Run migrations
+docker-compose exec web python3 manage.py migrate
+
+# Create superuser
+docker-compose exec web python3 manage.py createsuperuser
+```
+
+3. Now you can access the backend at:
 ```
 http://127.0.0.1:8001 or localhost:8001
 http://127.0.0.1:8001/api
 http://127.0.0.1:8001/api/swagger
+```
+And frontend at (login with your superuser credentials created previously):
+```
+http://127.0.0.1:3000 
+```
+4. Shut all the services down:
+```
+docker-compose down 
 ```
 
 ## Environment Variables
@@ -39,19 +57,22 @@ The following environment variables can be adjusted in .env:
 - `POSTGRES_DB`: Database name
 - `POSTGRES_USER`: Database user
 - `POSTGRES_PASSWORD`: Database password
+- `BACKEND_PORT`: Port allocated for the Django app
 
-## Dockerization
-
-This project is containerized using Docker and Docker Compose for easy deployment and development.
 
 ### Docker Configuration
 
-The project uses two main Docker configurations:
+The project uses following Docker configurations:
 
 1. `Dockerfile`: Builds the Python/Django application image
    - Uses Python 3.12 slim base image
    - Installs system and Python dependencies
    - Sets up the application environment
+
+2. `frontend/Dockerfile`: Builds the React application image
+   - Uses node:18-alpine as a base image
+   - Serves frontend files
+   - Vite for seamless local development
 
 2. `docker-compose.yml`: Orchestrates the application services
    - `web`: Django application service
@@ -63,40 +84,7 @@ The project uses two main Docker configurations:
      - Uses PostgreSQL 13
      - Persists data using Docker volumes
      - Configurable through environment variables
-
-### Docker Commands
-
-Common Docker operations:
-
-```bash
-# Build and start containers 
-docker-compose up --build # (--build - for the first time then just 'docker-compose up' for the consecutive runs)
-
-# Run in detached mode
-docker-compose up -d
-
-# [Important] Check the status of your containers
-docker ps
-
-# Stop and delete the containers
-docker-compose down
-```
-
-### Development
-
-When using Docker:
-```bash
-# Run migrations
-docker-compose exec web python3 manage.py migrate
-
-# Create superuser
-docker-compose exec web python3 manage.py createsuperuser
-
-# Access PostgreSQL shell
-docker-compose exec db psql -U postgres -d lightbulb
-```
-
-
+   - `frontend`: React App on Typescript
 
 
 
@@ -104,7 +92,7 @@ docker-compose exec db psql -U postgres -d lightbulb
 
 CI/CD environment with Jenkins, Harbor Registry, SonarQube, and Anchore Engine.
 
-## Starting CI/CD Environment
+## How to run CI/CD Environment
 
 1. Navigate to CI/CD directory:
 ```bash
