@@ -1,7 +1,7 @@
 # Lightbulb Project
 
-BACKEND - Python Django
-FRONTEND - React with Typescript & Vite for local development
+- BACKEND - Python Django
+- FRONTEND - React with Typescript & Vite for local development
 
 ## Prerequisites
 
