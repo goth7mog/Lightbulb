@@ -126,6 +126,17 @@ export const refreshToken = async () => {
 };
 
 // Accounts API
+
+// TODO: Remove this mock function when backend is ready
+export const createAccount = async (accountData: any) => {
+    console.warn("Using mocked createAccount");
+
+    return {
+        id: Date.now().toString(),
+        ...accountData,
+    };
+};
+
 export const getAccounts = async () => {
     const response = await api.get('/accounts/');
     return response.data;
@@ -178,6 +189,18 @@ export const getTop10Spenders = async () => {
 };
 
 // Businesses API
+
+//TODO: Remove this mock function when backend is ready
+export const createBusiness = async (businessData: any) => {
+    console.warn("Using mocked createBusiness");
+    
+    return {
+        id: Date.now().toString(),
+        ...businessData
+    };
+};
+
+
 export const getBusinesses = async () => {
     const response = await api.get('/businesses/');
     return response.data;
