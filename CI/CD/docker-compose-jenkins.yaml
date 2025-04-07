@@ -2,6 +2,19 @@ version: "3.8"
 
 services:
 
+  # Jenkins: the CI/CD server that will build your image when changes are merged.
+  jenkins:
+    build: .
+    image: jenkinspython
+    container_name: jenkins
+    ports:
+      - "8080:8080" # Jenkins UI
+      - "50000:50000" # Jenkins agent port
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - cicd-net
+
   # Harbor DB: PostgreSQL instance required by Harbor.
   harbor-db:
     image: postgres:14-alpine
@@ -23,7 +36,6 @@ services:
     image: redis:6.0.16-alpine
     platform: linux/amd64
     container_name: harbor-redis
-    # Simple password without username for Redis 6
     command: [ "redis-server", "--requirepass", "Harbor12345" ]
     volumes:
       - harbor_redis_data:/data
@@ -51,18 +63,16 @@ services:
       - POSTGRESQL_PASSWORD=harbor
       - POSTGRESQL_DATABASE=registry
       - CORE_SECRET=harbor-core-secret
-      # Correct Redis URL format for Redis 6
       - REDIS_URL=redis://:Harbor12345@harbor-redis:6379/0
       - _REDIS_URL_CORE=redis://:Harbor12345@harbor-redis:6379/0
       - _REDIS_URL_REG=redis://:Harbor12345@harbor-redis:6379/1
       - _REDIS_URL_JS=redis://:Harbor12345@harbor-redis:6379/2
       - _REDIS_URL_CHART=redis://:Harbor12345@harbor-redis:6379/3
-      # Jobservice URL
       - JOBSERVICE_URL=http://harbor-jobservice:8080
       - JOBSERVICE_SECRET=jobservice-secret
-      - INTERNAL_TLS_ENABLED=true # changed from false
+      - INTERNAL_TLS_ENABLED=false # changed from false
     volumes:
-      - ./harbor_config/core/app.conf:/etc/harbor/app.conf:ro
+      - ./harbor_config/core/app.conf:/etc/harbor/app.conf
       - harbor_core_data:/data
       - ./harbor_config/ssl:/etc/harbor/ssl
     networks:
@@ -77,42 +87,41 @@ services:
     depends_on:
       - harbor-db
     environment:
-      - INTERNAL_TLS_ENABLED=true # changed from false
+      - INTERNAL_TLS_ENABLED=false
     volumes:
-      - ./harbor_config/registry/config.yml:/etc/registry/config.yml:ro
+      - ./harbor_config/registry/config.yml:/etc/registry/config.yml
       - harbor_registry_data:/var/lib/registry
       - ./harbor_config/ssl:/etc/harbor/ssl
     networks:
       - cicd-net
 
-  # Harbor Job Service: Background job processor for Harbor
-  harbor-jobservice:
-    image: goharbor/harbor-jobservice:v2.7.0
-    platform: linux/amd64
-    # restart: always
-    container_name: harbor-jobservice
-    depends_on:
-      - harbor-core
-      - harbor-redis
-    environment:
-      - CORE_URL=http://harbor-core:8080
-      - REGISTRY_URL=http://harbor-registry:5000
-      - REDIS_URL=redis://:Harbor12345@harbor-redis:6379/0
-      - JOBSERVICE_SECRET=jobservice-secret
-      - CORE_SECRET=harbor-core-secret
-      - HTTP_PROXY=
-      - HTTPS_PROXY=
-      - NO_PROXY=harbor-core,harbor-redis,harbor-db
-      # Add this variable to ensure consistent authentication
-      - REGISTRY_CREDENTIAL_USERNAME=harbor_registry_user
-      - REGISTRY_CREDENTIAL_PASSWORD=harbor_registry_password
-      - INTERNAL_TLS_ENABLED=true
-    volumes:
-      - ./harbor_config/jobservice/config.yml:/etc/jobservice/config.yml:ro
-      - harbor_jobservice_data:/var/log/jobs
-      - ./harbor_config/ssl:/etc/harbor/ssl
-    networks:
-      - cicd-net
+  # # Harbor Job Service: Background job processor for Harbor
+  # harbor-jobservice:
+  #   image: goharbor/harbor-jobservice:v2.7.0
+  #   platform: linux/amd64
+  #   # restart: always
+  #   container_name: harbor-jobservice
+  #   depends_on:
+  #     - harbor-core
+  #     - harbor-redis
+  #   environment:
+  #     - CORE_URL=http://harbor-core:8080
+  #     - REGISTRY_URL=http://harbor-registry:5000
+  #     - REDIS_URL=redis://:Harbor12345@harbor-redis:6379/0
+  #     - JOBSERVICE_SECRET=jobservice-secret
+  #     - CORE_SECRET=harbor-core-secret
+  #     - HTTP_PROXY=
+  #     - HTTPS_PROXY=
+  #     - NO_PROXY=harbor-core,harbor-redis,harbor-db
+  #     - REGISTRY_CREDENTIAL_USERNAME=harbor_registry_user
+  #     - REGISTRY_CREDENTIAL_PASSWORD=harbor_registry_password
+  #     - INTERNAL_TLS_ENABLED=false
+  #   volumes:
+  #     - ./harbor_config/jobservice/config.yml:/etc/jobservice/config.yml
+  #     - harbor_jobservice_data:/var/log/jobs
+  #     - ./harbor_config/ssl:/etc/harbor/ssl
+  #   networks:
+  #     - cicd-net
 
   # Harbor Portal: A simple UI for Harbor
   harbor-portal:
@@ -124,7 +133,7 @@ services:
     ports:
       - "8085:80"
     volumes:
-      - ./harbor_config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./harbor_config/nginx/nginx.conf:/etc/nginx/nginx.conf
     networks:
       - cicd-net
 
@@ -133,7 +142,7 @@ volumes:
   harbor_registry_data:
   harbor_core_data:
   harbor_redis_data:
-  harbor_jobservice_data:
+    # harbor_jobservice_data:
 
 
 networks:
