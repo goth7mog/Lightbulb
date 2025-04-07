@@ -1,0 +1,45 @@
+---
+#Protocol used to serve
+protocol: "http"
+
+#Server listening port
+port: 8080
+
+#Worker pool
+worker_pool:
+  #Worker pool backend
+  backend: "redis"
+  #Maximum number of job execution workers in pool
+  workers: 10
+  #Redis connection info
+  redis_pool:
+    #Redis URL
+    redis_url: redis://harbor-redis:6379/0
+    #Redis namespace
+    namespace: "harbor_job_service"
+
+#Logger
+logger:
+  path: "/var/log/jobs"
+  level: "INFO"
+  archive_period: 14 #days
+
+#Job loggers
+job_loggers:
+  - name: "STD_OUTPUT" #logger backend name, only "FILE" and "STD_OUTPUT" are supported
+    level: "INFO"
+  - name: "FILE"
+    level: "INFO"
+    settings: # Customized settings of logger
+      base_dir: "/var/log/jobs"
+    sweeper:
+      duration: 1 #days
+      settings: # Customized settings of sweeper
+        work_dir: "/var/log/jobs"
+
+#Endpoint for core service
+core:
+  url: "http://harbor-core:8080"
+  token_service_url: "http://harbor-core:8080/service/token"
+
+job_service_secret: "harbor-jobservice-secret"

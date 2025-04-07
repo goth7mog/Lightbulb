@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  harbor-db:
+    image: goharbor/harbor-db:v2.8.0
+    container_name: harbor-db
+    platform: linux/amd64
+    environment:
+      - POSTGRES_PASSWORD=harbor_password
+      - POSTGRES_USER=harbor
+      - POSTGRES_DB=registry
+    volumes:
+      - harbor_db_data:/var/lib/postgresql/data
+    networks:
+      - harbor_network
+    restart: always
+
+  harbor-redis:
+    image: goharbor/redis-photon:v2.8.0
+    container_name: harbor-redis
+    platform: linux/amd64
+    volumes:
+      - harbor_redis_data:/var/lib/redis
+    networks:
+      - harbor_network
+    restart: always
+
+  harbor-registry:
+    image: goharbor/registry-photon:v2.8.0
+    container_name: harbor-registry
+    platform: linux/amd64
+    restart: always
+    volumes:
+      - harbor_registry_data:/storage
+      - ./harbor/common/config/registry/:/etc/registry/
+    networks:
+      - harbor_network
+    depends_on:
+      - harbor-redis
+    environment:
+      - REGISTRY_HTTP_SECRET=harbor-registry-secret
+      - REGISTRY_REDIS_URL=redis://harbor-redis:6379/0
+
+  harbor-core:
+    image: goharbor/harbor-core:v2.8.0
+    container_name: harbor-core
+    platform: linux/amd64
+    restart: always
+    depends_on:
+      - harbor-db
+      - harbor-redis
+    environment:
+      - CORE_SECRET=harbor-core-secret
+      - JOBSERVICE_SECRET=harbor-jobservice-secret
+      - HARBOR_ADMIN_PASSWORD=Harbor12345
+      - DATABASE_TYPE=postgresql
+      - POSTGRESQL_HOST=harbor-db
+      - POSTGRESQL_PORT=5432
+      - POSTGRESQL_USERNAME=harbor
+      - POSTGRESQL_PASSWORD=harbor_password
+      - POSTGRESQL_DATABASE=registry
+      - REGISTRY_URL=http://harbor-registry:5000
+      - PORTAL_URL=http://harbor-portal:8080
+      - TOKEN_SERVICE_URL=http://harbor-core:8080/service/token
+      - REGISTRY_STORAGE_PROVIDER_NAME=filesystem
+      - LOG_LEVEL=info
+      - CONFIG_PATH=/etc/core/app.conf
+      - CORE_URL=http://harbor-core:8080
+      - REGISTRY_CONTROLLER_URL=http://harbor-registry:8080
+    ports:
+      - 8083:8080
+    volumes:
+      - ./harbor/common/config/core/app.conf:/etc/core/app.conf:z
+      - ./harbor/common/config/core/certificates:/etc/core/certificates:z
+      - harbor_core_data:/data
+    networks:
+      - harbor_network
+
+  harbor-portal:
+    image: goharbor/harbor-portal:v2.8.0
+    container_name: harbor-portal
+    platform: linux/amd64
+    restart: always
+    networks:
+      - harbor_network
+    depends_on:
+      - harbor-core
+
+  harbor-jobservice:
+    image: goharbor/harbor-jobservice:v2.8.0
+    container_name: harbor-jobservice
+    platform: linux/amd64
+    restart: always
+    depends_on:
+      - harbor-core
+      - harbor-redis
+    environment:
+      - CORE_URL=http://harbor-core:8080
+      - REGISTRY_URL=http://harbor-registry:5000
+      - JOBSERVICE_SECRET=harbor-jobservice-secret
+      - JOBSERVICE_WEBHOOK_JOB_MAX_RETRY=10
+    volumes:
+      - ./harbor/common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
+      - harbor_jobservice_data:/var/log/jobs
+    networks:
+      - harbor_network
+
+  harbor-nginx:
+    image: goharbor/nginx-photon:v2.8.0
+    container_name: harbor-nginx
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "8081:8080"
+    networks:
+      - harbor_network
+    depends_on:
+      - harbor-portal
+      - harbor-core
+      - harbor-registry
+    volumes:
+      - ./harbor/common/config/nginx:/etc/nginx:z
+      - ./harbor/common/config/nginx/conf.d/harbor.conf:/etc/nginx/conf.d/default.conf:z
+
+volumes:
+  harbor_db_data:
+  harbor_core_data:
+  harbor_registry_data:
+  harbor_jobservice_data:
+  harbor_redis_data:
+
+
+networks:
+  harbor_network:
+    driver: bridge

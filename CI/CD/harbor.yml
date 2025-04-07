@@ -1,0 +1,41 @@
+# Harbor configuration file
+
+# The hostname of the Harbor registry
+hostname: localhost
+
+# HTTP related config
+http:
+  port: 8081
+
+# HTTPS related config (uncomment when using HTTPS)
+# https:
+#   port: 443
+#   certificate: /etc/harbor/ssl/harbor.crt
+#   private_key: /etc/harbor/ssl/harbor.key
+
+# Database
+database:
+  password: harbor_password
+  max_idle_conns: 100
+  max_open_conns: 900
+
+# Core configurations
+core:
+  xsrf_key: VYF5qAZEgLXQSPFrtkLJ5j94EwU6M5gZ
+  secret: harbor-core-secret
+
+# Jobservice configurations
+jobservice:
+  secret: harbor-jobservice-secret
+
+# Log configurations
+log:
+  level: info
+  local:
+    location: /var/log/harbor
+
+# Data volumes
+data_volume: /data
+
+# Admin password for Harbor
+harbor_admin_password: Harbor12345

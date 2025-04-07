@@ -1,0 +1,36 @@
+version: 0.1
+log:
+  level: info
+  fields:
+    service: registry
+storage:
+  filesystem:
+    rootdirectory: /storage
+  maintenance:
+    uploadpurging:
+      enabled: true
+      age: 168h
+      interval: 24h
+      dryrun: false
+  delete:
+    enabled: true
+http:
+  addr: :5000
+  secret: placeholder
+  relativeurls: false
+  tls:
+    certificate: /etc/harbor/tls/registry.crt
+    key: /etc/harbor/tls/registry.key
+    minimumtls: tls1.2
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
+proxies:
+  remoteurl: http://harbor-core:8080/v2
+validation:
+  disabled: true
+compatibility:
+  schema1:
+    enabled: true
