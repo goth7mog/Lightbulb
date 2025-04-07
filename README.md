@@ -90,7 +90,7 @@ The project uses following Docker configurations:
 
 ###   ------------       CI/CD Environment      ----------------   ###
 
-CI/CD environment with Jenkins, Harbor Registry, SonarQube, and Anchore Engine.
+CI/CD environment with Jenkins, Harbor Registry, SonarQube, and Grype.
 
 ## How to run CI/CD Environment
 
@@ -101,10 +101,10 @@ cd CI/CD
 
 2. Start the CI/CD services:
 ```bash
-docker-compose -f docker-compose-jenkins.yaml up -d
+docker-compose up -d
 ```
 
-2. Access the services:
+3. Access the services:
 - Jenkins: http://localhost:8080
   - Initial admin password: `docker exec -it jenkins bash` -> `cat /var/jenkins_home/secrets/initialAdminPassword`
 
@@ -114,13 +114,13 @@ docker-compose -f docker-compose-jenkins.yaml up -d
 - SonarQube: http://localhost:9000
   - Default credentials: admin/admin
 
-- Anchore Engine: http://localhost:8228
-  - API endpoint for vulnerability scanning
+- Grype: Container vulnerability scanning
+  - Run scans with: `docker exec grype grype your-image:tag`
 
 ### Stopping CI/CD Environment
 
 ```bash
-docker-compose -f docker-compose-jenkins.yaml down
+docker-compose down
 ```
 
 

@@ -20,9 +20,6 @@ services:
     image: bitnami/postgresql:14
     container_name: harbor-db
     environment:
-      # - POSTGRES_USER=harbor
-      # - POSTGRES_PASSWORD=harbor
-      # - POSTGRES_DB=registry
       - POSTGRESQL_PASSWORD=harbor7
       - POSTGRESQL_USERNAME=harbor7
       - POSTGRESQL_DATABASE=registry
@@ -32,7 +29,8 @@ services:
     networks:
       cicd-net:
         aliases:
-          - postgresql # Added alias so Harbor core can resolve "postgresql"
+          - postgresql
+          - harbor-db
 
   # Harbor Core: The main Harbor API server.
   harbor-core:
@@ -42,14 +40,14 @@ services:
       - harbor-db
     environment:
       - CORE_SECRET=key111
-      - CORE_KEY=secret333 # Add this line
-      - DATABASE_URL=postgresql://harbor7:harbor7@harbor-db:5432/harbor
+      - CORE_KEY=secret333
+      - DATABASE_URL=postgresql://harbor7:harbor7@harbor-db:5432/registry
     volumes:
       - ./harbor-core/app.conf:/etc/core/app.conf
     networks:
       - cicd-net
 
-  # Harbor Registry: The Docker registry service (simplified demo service).
+  # Harbor Registry: The Docker registry service.
   harbor-registry:
     image: bitnami/harbor-registry:latest
     container_name: harbor-registry
@@ -60,11 +58,10 @@ services:
     volumes:
       - harbor_registry_data:/storage
       - ./harbor-registry/config.yml:/etc/registry/config.yml
-
     networks:
       - cicd-net
 
-  # Harbor Portal: A simple UI for Harbor (mapped to port 8081 here).
+  # Harbor Portal: A simple UI for Harbor.
   harbor-portal:
     image: bitnami/harbor-portal:latest
     container_name: harbor-portal
@@ -72,44 +69,57 @@ services:
       - harbor-core
       - harbor-registry
     ports:
-      - "8082:80"
+      - "8081:80" # Changed from 8082 to 8081 to match README
     networks:
       - cicd-net
 
-  # SonarQube: For scanning your code for smells, bugs, and quality issues.
-  sonar:
-    image: sonarqube:community
-    container_name: sonarqube
-    ports:
-      - "9000:9000"
+  # Harbor Jobservice: Handles background jobs
+  harbor-jobservice:
+    image: bitnami/harbor-jobservice:latest
+    container_name: harbor-jobservice
+    depends_on:
+      - harbor-core
+    environment:
+      - CORE_URL=http://harbor-core:8080
     volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
+      - ./harbor-jobservice/config.yml:/etc/jobservice/config.yml
+      - harbor_jobservice_logs:/var/log/jobs
     networks:
       - cicd-net
+  # # SonarQube: For scanning your code for smells, bugs, and quality issues.
+  # sonar:
+  #   image: sonarqube:community
+  #   container_name: sonarqube
+  #   ports:
+  #     - "9000:9000"
+  #   volumes:
+  #     - sonarqube_data:/opt/sonarqube/data
+  #     - sonarqube_extensions:/opt/sonarqube/extensions
+  #   networks:
+  #     - cicd-net
 
-  # Grype: Modern container vulnerability scanner (replaces Anchore Engine)
-  grype:
-    image: anchore/grype:latest
-    container_name: grype
-    # No ports needed - used as a CLI tool
-    # No database required
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock # To scan local Docker images
-      - grype_cache:/root/.cache/grype # Cache vulnerability database
-      # - ./images:/images # Mount directory for image tarballs
-    networks:
-      - cicd-net
-    # Use entrypoint that keeps container running (Grype is normally invoked on-demand)
-    # entrypoint: [ "tail", "-f", "/dev/null" ]
+  # # Grype: Modern container vulnerability scanner (replaces Anchore Engine)
+  # grype:
+  #   image: anchore/grype:latest
+  #   container_name: grype
+  #   # No ports needed - used as a CLI tool
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock # To scan local Docker images
+  #     - grype_cache:/root/.cache/grype # Cache vulnerability database
+  #     # - ./images:/images # Mount directory for image tarballs
+  #   networks:
+  #     - cicd-net
+  #   # Use entrypoint that keeps container running (Grype is normally invoked on-demand)
+  #   entrypoint: [ "tail", "-f", "/dev/null" ]
 
 volumes:
   jenkins_home:
   harbor_db_data:
   harbor_registry_data:
-  sonarqube_data:
-  sonarqube_extensions:
-  grype_cache:
+  harbor_jobservice_logs:
+    # sonarqube_data:
+    # sonarqube_extensions:
+    # grype_cache:
 
 
 networks:

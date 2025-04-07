@@ -1,0 +1,58 @@
+---
+#Protocol used to serve
+protocol: "http"
+
+#Config certification if use 'https' protocol
+#https_config:
+#  cert: "/path/to/cert"
+#  key: "/path/to/key"
+
+#Server listening port
+port: 8080
+
+#Worker pool
+worker_pool:
+  #Worker pool backend, supports "redis" and "memory"
+  #memory backend just for development use
+  backend: "memory"
+  #Max workers
+  workers: 10
+  #Redis backend options
+  #redis_pool:
+  #  #Redis URL
+  #  redis_url: redis://harbor-redis:6379/0
+  #  #Namespace
+  #  namespace: "harbor_job_service"
+
+#Logger
+logger:
+  level: "INFO"
+  n: 10
+  size: 10M
+  output: "/var/log/jobs/job_logs.log"
+  #Settings for external logger
+  #external:
+  #  endpoint: "localhost:8080"
+  #  auth_header: "SecurityAuthorization"
+  #  auth_header_value: "Bearer xxxxxxx"
+
+#Job loggers
+job_loggers:
+  - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
+    level: "INFO" # INFO/DEBUG/WARNING/ERROR
+
+#Loggers for the job service itself
+loggers:
+  - name: "STD_OUTPUT" # Same with above
+    level: "INFO"
+
+job_service_pool:
+  #Job retention time in days
+  job_retention_time: 7
+
+#Tracker for checking in progress jobs
+job_tracker:
+  #Check interval in seconds
+  check_interval_sec: 30
+  #Check timeout in seconds
+  job_timeout_sec: 3600
