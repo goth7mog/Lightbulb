@@ -1,0 +1,39 @@
+---
+protocol: "http"
+port: 8080
+worker_pool:
+  workers: 10
+  backend: "redis"
+  redis_pool:
+    redis_url: "redis://:Harbor12345@harbor-redis:6379/0"
+    namespace: "harbor_job_service_namespace"
+    idle_timeout_second: 3600
+job_loggers:
+  - name: "FILE"
+    level: "INFO"
+    settings:
+      base_dir: "/var/log/jobs"
+  - name: "STD_OUTPUT"
+    level: "INFO"
+logger:
+  name: "JOBSERVICE"
+  level: "INFO"
+  settings: {}
+metric:
+  enabled: false
+  path: "/metrics"
+  port: 8001
+workers:
+  pool:
+    backend: "redis"
+    redis_pool:
+      redis_url: "redis://:Harbor12345@harbor-redis:6379/0"
+      namespace: "harbor_job_service_worker_pool"
+      idle_timeout_second: 3600
+  retries: 5
+  retry_interval: 60
+job_life_cycle:
+  max_failed_days: 7
+  max_succeed_days: 7
+internal_tls:
+  enabled: false
