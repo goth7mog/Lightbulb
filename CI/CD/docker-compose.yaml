@@ -1,0 +1,117 @@
+version: "3.8"
+
+services:
+  # Jenkins: the CI/CD server that will build your image when changes are merged.
+  jenkins:
+    build: .
+    image: jenkinspython
+    container_name: jenkins
+    ports:
+      - "8080:8080" # Jenkins UI
+      - "50000:50000" # Jenkins agent port
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use host Docker
+    networks:
+      - cicd-net
+
+  # Harbor DB: PostgreSQL instance required by Harbor.
+  harbor-db:
+    image: bitnami/postgresql:14
+    container_name: harbor-db
+    environment:
+      # - POSTGRES_USER=harbor
+      # - POSTGRES_PASSWORD=harbor
+      # - POSTGRES_DB=registry
+      - POSTGRESQL_PASSWORD=harbor7
+      - POSTGRESQL_USERNAME=harbor7
+      - POSTGRESQL_DATABASE=registry
+
+    volumes:
+      - harbor_db_data:/bitnami/postgresql
+    networks:
+      cicd-net:
+        aliases:
+          - postgresql # Added alias so Harbor core can resolve "postgresql"
+
+  # Harbor Core: The main Harbor API server.
+  harbor-core:
+    image: bitnami/harbor-core:latest
+    container_name: harbor-core
+    depends_on:
+      - harbor-db
+    environment:
+      - CORE_SECRET=key111
+      - CORE_KEY=secret333 # Add this line
+      - DATABASE_URL=postgresql://harbor7:harbor7@harbor-db:5432/harbor
+    volumes:
+      - ./harbor-core/app.conf:/etc/core/app.conf
+    networks:
+      - cicd-net
+
+  # Harbor Registry: The Docker registry service (simplified demo service).
+  harbor-registry:
+    image: bitnami/harbor-registry:latest
+    container_name: harbor-registry
+    depends_on:
+      - harbor-db
+    environment:
+      - REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/storage
+    volumes:
+      - harbor_registry_data:/storage
+      - ./harbor-registry/config.yml:/etc/registry/config.yml
+
+    networks:
+      - cicd-net
+
+  # Harbor Portal: A simple UI for Harbor (mapped to port 8081 here).
+  harbor-portal:
+    image: bitnami/harbor-portal:latest
+    container_name: harbor-portal
+    depends_on:
+      - harbor-core
+      - harbor-registry
+    ports:
+      - "8082:80"
+    networks:
+      - cicd-net
+
+  # SonarQube: For scanning your code for smells, bugs, and quality issues.
+  sonar:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - cicd-net
+
+  # Grype: Modern container vulnerability scanner (replaces Anchore Engine)
+  grype:
+    image: anchore/grype:latest
+    container_name: grype
+    # No ports needed - used as a CLI tool
+    # No database required
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # To scan local Docker images
+      - grype_cache:/root/.cache/grype # Cache vulnerability database
+      # - ./images:/images # Mount directory for image tarballs
+    networks:
+      - cicd-net
+    # Use entrypoint that keeps container running (Grype is normally invoked on-demand)
+    # entrypoint: [ "tail", "-f", "/dev/null" ]
+
+volumes:
+  jenkins_home:
+  harbor_db_data:
+  harbor_registry_data:
+  sonarqube_data:
+  sonarqube_extensions:
+  grype_cache:
+
+
+networks:
+  cicd-net:
+    driver: bridge
