@@ -86,52 +86,10 @@ The project uses following Docker configurations:
      - Configurable through environment variables
    - `frontend`: React App on Typescript
 
+## CI/CD Environment
 
+Check README inside corresponding folder
 
-###   ------------       CI/CD Environment      ----------------   ###
-
-CI/CD environment with Jenkins, Harbor Registry, SonarQube, and Anchore Engine.
-
-## How to run CI/CD Environment
-
-1. Navigate to CI/CD directory:
-```bash
-cd CI/CD
-```
-
-2. Start the CI/CD services:
-```bash
-docker-compose -f docker-compose-jenkins.yaml up -d
-```
-
-2. Access the services:
-- Jenkins: http://localhost:8080
-  - Initial admin password: `docker exec -it jenkins bash` -> `cat /var/jenkins_home/secrets/initialAdminPassword`
-
-- Harbor Registry: http://localhost:8081
-  - Default credentials: admin/Harbor12345
-
-- SonarQube: http://localhost:9000
-  - Default credentials: admin/admin
-
-- Anchore Engine: http://localhost:8228
-  - API endpoint for vulnerability scanning
-
-### Stopping CI/CD Environment
-
-```bash
-docker-compose -f docker-compose-jenkins.yaml down
-```
-
-
-
-## Create a Jenkins build
-  New Item -> Multibranch Pipeline ->
-  1) Branch Sources (Add source - Single repository & branch, Source Code Management - Git, Repository URL - <github url>, Credentials - Add - Jenkins - Kind (SSH Username with private key), Username - git, Private Key - your private ssh key, Branches to build - Branch Specifier - */main, Repository Browser - Auto, Property strategy - All branches get the same properties)
-  2) Build Configuration (Mode - by Jenkinsfile, Script Path - Jenkinsfile)
-  3) Scan Multibranch Pipeline Triggers (Periodically if not otherwise run, Interval - <your value>)
-  4) Save
-  5) Check for Console output logs
 
 ## License
 

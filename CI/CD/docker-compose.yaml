@@ -57,6 +57,7 @@ services:
       - CONFIG_PATH=/etc/harbor/app.conf
       - LOG_LEVEL=info
       - DATABASE_TYPE=postgresql
+      - HARBOR_ADMIN_PASSWORD=habr111 # Uncommented and modified - set your desired password here
       - POSTGRESQL_HOST=harbor-db
       - POSTGRESQL_PORT=5432
       - POSTGRESQL_USERNAME=harbor
@@ -68,13 +69,13 @@ services:
       - _REDIS_URL_REG=redis://:Harbor12345@harbor-redis:6379/1
       - _REDIS_URL_JS=redis://:Harbor12345@harbor-redis:6379/2
       - _REDIS_URL_CHART=redis://:Harbor12345@harbor-redis:6379/3
-      - JOBSERVICE_URL=http://harbor-jobservice:8080
-      - JOBSERVICE_SECRET=jobservice-secret
+      # - JOBSERVICE_URL=http://harbor-jobservice:8080
+      # - JOBSERVICE_SECRET=jobservice-secret
       - INTERNAL_TLS_ENABLED=false # changed from false
     volumes:
       - ./harbor_config/core/app.conf:/etc/harbor/app.conf
       - harbor_core_data:/data
-      - ./harbor_config/ssl:/etc/harbor/ssl
+      # - ./harbor_config/ssl:/etc/harbor/ssl
     networks:
       - cicd-net
 
@@ -91,7 +92,7 @@ services:
     volumes:
       - ./harbor_config/registry/config.yml:/etc/registry/config.yml
       - harbor_registry_data:/var/lib/registry
-      - ./harbor_config/ssl:/etc/harbor/ssl
+      # - ./harbor_config/ssl:/etc/harbor/ssl
     networks:
       - cicd-net
 
@@ -137,12 +138,42 @@ services:
     networks:
       - cicd-net
 
+  # SonarQube: For scanning your code for smells, bugs, and quality issues.
+  sonar:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - cicd-net
+
+  # Grype: Modern container vulnerability scanner (replaces Anchore Engine)
+  grype:
+    image: anchore/grype:latest
+    container_name: grype
+    # No ports needed - used as a CLI tool
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # To scan local Docker images
+      - grype_cache:/root/.cache/grype # Cache vulnerability database
+    networks:
+      - cicd-net
+    # Use entrypoint that keeps container running (Grype is normally invoked on-demand)
+    # entrypoint: [ "tail", "-f", "/dev/null" ]
+
 volumes:
   harbor_db_data:
   harbor_registry_data:
   harbor_core_data:
   harbor_redis_data:
+  grype_cache:
+  sonarqube_data:
+  sonarqube_extensions:
+  jenkins_home:
     # harbor_jobservice_data:
+
 
 
 networks:
