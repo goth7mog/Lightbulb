@@ -50,16 +50,22 @@ Grype is a modern container vulnerability scanner that can analyze Docker images
 
 ### Scanning Images with Grype
 
-To scan a Docker image for vulnerabilities:
+Usage:
 
 ```bash
-docker exec -it grype grype <image-name>:<tag>
+docker-compose run --rm grype [registry-url]/[repository]:[tag]
 ```
 
-For example, to scan your application image:
+How to scan a local image:
 
 ```bash
-docker exec -it grype grype your-registry/banking-app:latest
+docker-compose run --rm grype alpine:latest
+```
+
+How to scan an image on Dockerhub:
+
+```bash
+docker-compose run --rm grype docker.io/nginx:latest
 ```
 
 ### Grype Output
