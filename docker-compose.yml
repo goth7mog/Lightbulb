@@ -6,22 +6,12 @@ services:
     build: . #this will build from current dir if banking image is not on your system
     volumes:
       - .:/app
+      - ./db.sqlite3:/app/db.sqlite3
     ports:
       - "${BACKEND_PORT}:8000" # Port mapping
     env_file:
       - .env
-    depends_on:
-      - db
     restart: "no"
-    networks:
-      - banking_network
-
-  db:
-    image: postgres:13
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env
     networks:
       - banking_network
 
@@ -42,9 +32,16 @@ services:
     networks:
       - banking_network
 
-volumes:
-  postgres_data:
-
+  sqlite-browser:
+    image: coleifer/sqlite-web
+    platform: linux/amd64
+    volumes:
+      - .:/data
+    ports:
+      - "5050:8080"
+    command: sqlite_web -H 0.0.0.0 -p 8080 /data/db.sqlite3
+    networks:
+      - banking_network
 
 networks:
   banking_network:
