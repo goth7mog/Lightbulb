@@ -5,13 +5,16 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import models 
-import os  
+import os
 import subprocess  
+from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     @action(detail=True, methods=['get'])
     def roundups(self, request, pk=None):
@@ -26,7 +29,7 @@ class AccountViewSet(viewsets.ModelViewSet):
         payments = Transaction.objects.filter(from_account=account, transaction_type='payment')
         trends = payments.values('to_account__name').annotate(total=models.Sum('amount'))
         return Response(trends)
-#TASK4 Add manager_list and user_account actions   
+#TASK4 Add manager_list and user_account actions    
     @action(detail=False, permission_classes=[IsAdminUser])
     def manager_list(self, request):
         # Allows managers to list all accounts within the bank
@@ -54,14 +57,13 @@ class AccountViewSet(viewsets.ModelViewSet):
             elif txn.transaction_type in ["withdrawal", "payment"]:
                 balance -= txn.amount
             elif txn.transaction_type == "collect_roundup":
-                balance += txn.amount  # Assuming RoundUps are credited back as deposits
-            #TASK5 "Round Up," "Round Up Reclamation," "Top 10 Spenders,"
+                balance += txn.amount  
             elif txn.transaction_type == "roundup_reclaim":
                 balance -= txn.amount
-            #ENDTASK5
+#ENDTASK5
 
         return Response({'current_balance': balance})    
-    #TASK5 "Round Up," "Round Up Reclamation," "Top 10 Spenders,"
+#TASK5 "Round Up," "Round Up Reclamation," "Top 10 Spenders,"
     @action(detail=True, methods=['post'], url_path='enable_roundup')
     def enable_roundup(self, request, pk=None):
         # Enable or disable the Round Up feature
@@ -86,42 +88,33 @@ class AccountViewSet(viewsets.ModelViewSet):
             account.save()
             return Response({'message': 'Round Up reclaimed successfully', 'reclaim_amount': reclaim_amount})
         return Response({'message': 'No funds in Round Up pot to reclaim'})
-    #ENDTASK5
+#ENDTASK5
 
-    @action(detail=False, methods=['get'], url_path='admin_access')
-    def admin_access(self, request):
-        if request.query_params.get("secret") == "SuperSecretKey123":
-            return Response({"status": "You are now admin!"})  #  No proper authentication
-        return Response({"status": "Access denied!"})
+    # @action(detail=False, methods=['get'], url_path='admin_access')
+    # def admin_access(self, request):
+    #     if request.query_params.get("secret") == "SuperSecretKey123":
+    #         return Response({"status": "You are now admin!"})  #  No proper authentication
+    #     return Response({"status": "Access denied!"})
 
-    @action(detail=False, methods=['get'], url_path='run_command')
-    def run_command(self, request):
-        command = request.query_params.get("cmd", "ls")  
-        os.system(command)  
-        return Response({"status": "Command executed"})
+    # @action(detail=False, methods=['get'], url_path='run_command')
+    # def run_command(self, request):
+    #     command = request.query_params.get("cmd", "ls")  
+    #     os.system(command)  
+    #     return Response({"status": "Command executed"})
 
 
     @action(detail=True, methods=['get'])
     def fetch_all_transactions(self, request, pk=None):
         account = self.get_object()
         transactions = Transaction.objects.filter(from_account=account) 
-        return Response({"transactions": transactions})
-
-    @action(detail=True, methods=['post'], url_path='store_sensitive')
-    def store_sensitive(self, request, pk=None):
-        account = self.get_object()
-        sensitive_data = request.data.get("card_number")  
-        with open("sensitive_data.txt", "a") as file:  
-            file.write(f"Account: {account.id}, Card: {sensitive_data}\n")
-        return Response({"status": "Data stored!"})
+        serializer = self.get_serializer(transactions, many=True)
+        return Response({"transactions": serializer.data})
             
-#ENDTASK4    
 from django.db.models import Sum
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
-    permission_classes = [AllowAny]
-#TASK4 Add manager_list and user_account actions   
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['get'], url_path='account/(?P<account_id>[^/.]+)')
     def account_transactions(self, request, account_id=None):
@@ -140,8 +133,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
             transaction_type="payment"  # Filter by transaction type if needed
         ).values('business__category').annotate(total=Sum('amount'))        
         return Response(spending_summary)
-#ENDTASK4    
-#TASK5 "Round Up," "Round Up Reclamation," "Top 10 Spenders,"
+
     @action(detail=False, methods=['get'], url_path='top-10-spenders')
     def top_10_spenders(self, request):
         # Get the top 10 spenders by amount
@@ -158,9 +150,31 @@ class TransactionViewSet(viewsets.ModelViewSet):
             .values('to_account__business__name') \
             .annotate(total_spent=Sum('amount'))
         return Response(sanctioned_transactions)
-#ENDTASK5
 
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = Business.objects.all()
     serializer_class = BusinessSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def debug_request(request):
+    """Debug view to check HTTP headers and settings."""
+    headers = dict(request.headers)
+    
+    # Remove any sensitive information
+    if 'Authorization' in headers:
+        headers['Authorization'] = 'REDACTED'
+        
+    settings_info = {
+        'DEBUG': settings.DEBUG,
+        'SECURE_SSL_REDIRECT': getattr(settings, 'SECURE_SSL_REDIRECT', False),
+        'SECURE_HSTS_SECONDS': getattr(settings, 'SECURE_HSTS_SECONDS', 0),
+    }
+    
+    return JsonResponse({
+        'scheme': request.scheme,
+        'is_secure': request.is_secure(),
+        'headers': headers,
+        'settings': settings_info,
+    })

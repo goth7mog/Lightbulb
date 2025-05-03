@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    image: bank
+    # image: bank
     build: . #this will build from current dir if banking image is not on your system
     volumes:
       - .:/app

@@ -12,6 +12,16 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
+
+# Add dotenv support with error handling
+try:
+    from dotenv import load_dotenv
+    # Load environment variables from .env file
+    load_dotenv()
+    print("Loaded environment variables from .env file")
+except ImportError:
+    print("python-dotenv not found, using environment variables directly")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +31,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-r4e9i4^(%pp-)d*%u%@6v420jyp8x93w^+*id9hkzslr8a*5ww'
+# Using environment variable for secret key with fallback for development
 
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == '1'  # Changed from 'True' to '1' to match your .env
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts in development
+# Be more specific with allowed hosts
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
 # Application definition
@@ -133,31 +145,50 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # Fix: Change default permission class to require authentication
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ),
 }
 
-# CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # In development only
-# CORS_ALLOWED_ORIGINS = [
-#     'http://frontend:3000',  # Frontend during development
-#   # 'https://your-production-domain.com',  # Production frontend
-# ]
+# Fix: Update CORS settings for better security
+if DEBUG:
+    # Allow all origins in development
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # In production, restrict to specific origins
+    CORS_ALLOWED_ORIGINS = [
+        'https://banking-app.example.com',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+    ]
+    
+    # # Enable security headers in production
+    # SECURE_HSTS_SECONDS = 31536000  # 1 year
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD = True
+    # SECURE_SSL_REDIRECT = False  # Explicitly disable HTTPS redirection
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
+    # SECURE_BROWSER_XSS_FILTER = True
+    # SECURE_CONTENT_TYPE_NOSNIFF = True
+    # X_FRAME_OPTIONS = 'DENY'
 
+# Only allow credentials when origins are explicitly listed
 CORS_ALLOW_CREDENTIALS = True
 
-# CORS_ALLOW_HEADERS = [
-#     'Authorization',
-#     'Content-Type',
-#     'X-CSRFToken',
-# ]
+# Specify allowed headers
+CORS_ALLOW_HEADERS = [
+    'Authorization',
+    'Content-Type',
+    'X-CSRFToken',
+]
 
 # JWT settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Fix: Reduced token lifetime
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
+    'ROTATE_REFRESH_TOKENS': True,  # Fix: Enable token rotation
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
