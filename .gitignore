@@ -62,3 +62,4 @@ yarn.lock
 
 # Ignore certificate folder
 CA/
+CI/CD/harbor_config/ssl/
