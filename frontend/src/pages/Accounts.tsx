@@ -14,6 +14,7 @@ const Accounts = () => {
     starting_balance: "",
     postcode: "",
     round_up_enabled: false,
+    account_type: "current",
   });
   const [accountFormError, setAccountFormError] = useState("");
 
@@ -35,7 +36,7 @@ const Accounts = () => {
   }, []);
 
   const handleAccountInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type, checked } = e.target;
     setNewAccount({
@@ -59,6 +60,7 @@ const Accounts = () => {
         starting_balance: "",
         postcode: "",
         round_up_enabled: false,
+        account_type: "current",
       });
       setAccountFormError("");
     } catch (err) {
@@ -96,6 +98,7 @@ const Accounts = () => {
               starting_balance: "",
               postcode: "",
               round_up_enabled: false,
+              account_type: "current",
             });
             setAccountFormError("");
           }}
@@ -109,6 +112,19 @@ const Accounts = () => {
               value={newAccount.name}
               onChange={handleAccountInputChange}
             />
+          </Form.Group>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Account Type</Form.Label>
+            <Form.Select
+              name="account_type"
+              value={newAccount.account_type}
+              onChange={handleAccountInputChange}
+            >
+              <option value="current">Current Account</option>
+              <option value="savings">Savings Account</option>
+              <option value="business">Business Account</option>
+            </Form.Select>
           </Form.Group>
 
           <Form.Group className="mb-3">
@@ -170,6 +186,9 @@ const Accounts = () => {
                       <strong>Postcode:</strong> {account.postcode}
                     </Card.Text>
                   )}
+                  <Card.Text>
+                    <strong>Account Type:</strong> {account.account_type}
+                  </Card.Text>
                 </Card.Body>
                 <Card.Footer className="bg-transparent">
                   <Link

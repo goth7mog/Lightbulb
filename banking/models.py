@@ -1,11 +1,19 @@
 from django.db import models
+import uuid  # Add this import at the top
 
 class Account(models.Model):
-    id = models.UUIDField(primary_key=True, editable=False,)
+    ACCOUNT_TYPES = [
+        ('current', 'Current Account'),
+        ('savings', 'Savings Account'),
+        ('business', 'Business Account'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     starting_balance = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
     round_up_enabled = models.BooleanField(default=False)
     postcode = models.CharField(max_length=10, null=True, blank=True)
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default='current')
     #TASK5  "Round Up," "Round Up Reclamation," "Top 10 Spenders,"
     round_up_pot = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # New field for Round Up Pot 
     #ENDTASK5

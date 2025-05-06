@@ -27,7 +27,8 @@ docker-compose up --build
 
 3. First-time setup only:
 ```bash
-# Run migrations (only needed on first setup or when models change)
+# Run migrations (when models change)
+docker-compose exec web python3 manage.py makemigrations
 docker-compose exec web python3 manage.py migrate
 
 # Create superuser (only needed once for admin access)
