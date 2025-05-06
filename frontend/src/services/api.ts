@@ -126,15 +126,14 @@ export const refreshToken = async () => {
 };
 
 // Accounts API
-
-// TODO: Remove this mock function when backend is ready
 export const createAccount = async (accountData: any) => {
-    console.warn("Using mocked createAccount");
-
-    return {
-        id: Date.now().toString(),
-        ...accountData,
-    };
+    try {
+        const response = await api.post('/accounts/', accountData);
+        return response.data;
+    } catch (error) {
+        console.error('API Error in createAccount:', error);
+        throw error;
+    }
 };
 
 export const getAccounts = async () => {
@@ -193,7 +192,7 @@ export const getTop10Spenders = async () => {
 //TODO: Remove this mock function when backend is ready
 export const createBusiness = async (businessData: any) => {
     console.warn("Using mocked createBusiness");
-    
+
     return {
         id: Date.now().toString(),
         ...businessData

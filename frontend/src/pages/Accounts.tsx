@@ -8,6 +8,7 @@ const Accounts = () => {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [newAccount, setNewAccount] = useState({
     name: "",
@@ -54,6 +55,7 @@ const Accounts = () => {
     try {
       const created = await createAccount(newAccount);
       setAccounts([...accounts, created]);
+      setSuccessMessage("Account created successfully!");
 
       setNewAccount({
         name: "",
@@ -101,8 +103,11 @@ const Accounts = () => {
               account_type: "current",
             });
             setAccountFormError("");
+            setSuccessMessage("");
           }}
           showError={accountFormError}
+          showSuccess={!!successMessage}
+          successMessage={successMessage}
         >
           <Form.Group className="mb-3">
             <Form.Label>Account Name</Form.Label>
