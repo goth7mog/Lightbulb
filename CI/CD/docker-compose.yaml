@@ -7,14 +7,14 @@ services:
     build: .
     image: jenkinspython
     container_name: jenkins
-    user: root # Add this line to run as root
+    # user: root # Add this line to run as root
     ports:
       - "8080:8080" # Jenkins UI
       - "50000:50000" # Jenkins agent port
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/bin/docker:/usr/local/bin/docker # Add Docker binary
+      # - /usr/local/bin/docker:/usr/local/bin/docker # Add Docker binary
     networks:
       - cicd-net
 

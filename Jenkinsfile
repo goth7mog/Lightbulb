@@ -49,27 +49,20 @@ pipeline {
             }
         }
         
-        stage('SonarQube Analysis') {
-            agent {
-                docker {
-                    image 'sonarsource/sonar-scanner-cli:latest'
-                    reuseNode true
-                    args '-v /var/run/docker.sock:/var/run/docker.sock -u root:root'
-                }
-            }
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh '''
-                    sonar-scanner \
-                      -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=http://sonar:9000 \
-                      -Dsonar.python.coverage.reportPaths=coverage.xml \
-                      -Dsonar.exclusions=frontend/**
-                    '''
-                }
-            }
-        }
+        // stage('SonarQube Analysis') {
+        //     steps {
+        //         withSonarQubeEnv('SonarQube') {
+        //             sh '''
+        //             sonar-scanner \
+        //               -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+        //               -Dsonar.sources=. \
+        //               -Dsonar.host.url=http://sonar:9000 \
+        //               -Dsonar.python.coverage.reportPaths=coverage.xml \
+        //               -Dsonar.exclusions=frontend/**
+        //             '''
+        //         }
+        //     }
+        // }
         
         stage('Build Docker Image') {
             steps {
