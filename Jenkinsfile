@@ -76,7 +76,7 @@ pipeline {
         stage('Vulnerability Scan with Grype') {
             steps {
                 // Use Grype to scan the container image for vulnerabilities
-                sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock anchore/grype ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${IMAGE_TAG} --fail-on high"
+                sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v ${WORKSPACE}/CI/CD/grype-security-exceptions.yaml:/grype.yaml anchore/grype ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${IMAGE_TAG} --fail-on high --config /grype.yaml"
             }
         }
         

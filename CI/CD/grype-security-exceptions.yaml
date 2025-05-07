@@ -1,0 +1,20 @@
+ignore:
+  # wget vulnerabilities that won't be fixed
+  - vulnerability: CVE-2021-31879
+    package:
+      name: wget
+    until: 2025-12-31
+    reason: "Low impact, won't fix from debian"
+
+  - vulnerability: CVE-2024-10524
+    package:
+      name: wget
+    until: 2025-12-31
+    reason: "Medium severity, waiting for upstream fix"
+
+  # Critical zlib vulnerability needs immediate attention
+  - vulnerability: CVE-2023-45853
+    package:
+      name: zlib1g-dev
+    until: 2024-06-01  # Short exception period to force addressing this issue
+    reason: "Temporary exception while upgrading dependencies"

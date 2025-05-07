@@ -7,14 +7,24 @@ services:
     build: .
     image: jenkinspython
     container_name: jenkins
-    # user: root # Add this line to run as root
+    user: root
+    init: true
     ports:
       - "8080:8080" # Jenkins UI
       - "50000:50000" # Jenkins agent port
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-      # - /usr/local/bin/docker:/usr/local/bin/docker # Add Docker binary
+      - /usr/local/bin/docker:/usr/local/bin/docker
+    environment:
+      - DOCKER_GID=999 # Default Docker group ID on many systems
+      - JENKINS_HOME=/var/jenkins_home
+    entrypoint: |
+      /bin/bash -c '
+      chown jenkins:jenkins /var/jenkins_home
+      chmod 666 /var/run/docker.sock
+      /usr/bin/tini -- /usr/local/bin/jenkins.sh
+      '
     networks:
       - cicd-net
 
@@ -176,8 +186,6 @@ volumes:
   sonarqube_extensions:
   jenkins_home:
     # harbor_jobservice_data:
-
-
 
 networks:
   cicd-net:
