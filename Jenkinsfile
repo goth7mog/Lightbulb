@@ -88,10 +88,20 @@ pipeline {
         stage('Push to Harbor Registry') {
             steps {
                 script {
-                    // Login to Harbor registry and push the image
-                    withCredentials([usernamePassword(credentialsId: 'harbor-credentials', passwordVariable: 'HARBOR_PASSWORD', usernameVariable: 'HARBOR_USERNAME')]) {
-                        sh "echo ${HARBOR_PASSWORD} | docker login ${HARBOR_REGISTRY} -u ${HARBOR_USERNAME} --password-stdin"
-                        sh "docker push ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    // Retry block for network issues
+                    retry(3) {
+                        timeout(time: 2, unit: 'MINUTES') {
+                            withCredentials([usernamePassword(credentialsId: 'harbor-credentials', 
+                                                            passwordVariable: 'HARBOR_PASSWORD', 
+                                                            usernameVariable: 'HARBOR_USERNAME')]) {
+                                // Use sh with single quotes to prevent Groovy interpolation
+                                sh '''
+                                    set +x
+                                    echo "$HARBOR_PASSWORD" | docker login ${HARBOR_REGISTRY} -u "$HARBOR_USERNAME" --password-stdin
+                                '''
+                            }
+                            sh "docker push ${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${IMAGE_TAG}"
+                        }
                     }
                 }
             }
