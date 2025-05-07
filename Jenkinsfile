@@ -50,6 +50,12 @@ pipeline {
         }
         
         stage('SonarQube Analysis') {
+            agent {
+                docker {
+                    image 'sonarsource/sonar-scanner-cli:latest'
+                    reuseNode true
+                }
+            }
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
