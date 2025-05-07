@@ -86,40 +86,40 @@ pipeline {
             }
         }
         
-        stage('Push to Harbor Registry') {
-            steps {
-                script {
-                    // Test Harbor connectivity first
-                    sh "curl -k -f --connect-timeout 10 http://${HARBOR_REGISTRY}/v2/ || echo 'Harbor registry not reachable'"
+        // stage('Push to Harbor Registry') {
+        //     steps {
+        //         script {
+        //             // Test Harbor connectivity first
+        //             sh "curl -k -f --connect-timeout 10 http://${HARBOR_REGISTRY}/v2/ || echo 'Harbor registry not reachable'"
                     
-                    // Retry block with exponential backoff
-                    retry(5) {
-                        sleep(time: 10, unit: 'SECONDS') // Add delay between retries
-                        timeout(time: 5, unit: 'MINUTES') {
-                            withCredentials([usernamePassword(credentialsId: 'harbor-credentials', 
-                                                           passwordVariable: 'HARBOR_PASSWORD', 
-                                                           usernameVariable: 'HARBOR_USERNAME')]) {
-                                sh '''#!/bin/bash
-                                    set -e
-                                    set +x
-                                    DOCKER_TIMEOUT=120
-                                    export DOCKER_CLIENT_TIMEOUT=$DOCKER_TIMEOUT
-                                    export COMPOSE_HTTP_TIMEOUT=$DOCKER_TIMEOUT
-                                    echo "Attempting to log in to registry..."
-                                    echo $HARBOR_PASSWORD | docker login $HARBOR_REGISTRY -u $HARBOR_USERNAME --password-stdin
-                                '''
+        //             // Retry block with exponential backoff
+        //             retry(1) {
+        //                 sleep(time: 10, unit: 'SECONDS') // Add delay between retries
+        //                 timeout(time: 1, unit: 'MINUTES') {
+        //                     withCredentials([usernamePassword(credentialsId: 'harbor-credentials', 
+        //                                                    passwordVariable: 'HARBOR_PASSWORD', 
+        //                                                    usernameVariable: 'HARBOR_USERNAME')]) {
+        //                         sh '''#!/bin/bash
+        //                             set -e
+        //                             set +x
+        //                             DOCKER_TIMEOUT=120
+        //                             export DOCKER_CLIENT_TIMEOUT=$DOCKER_TIMEOUT
+        //                             export COMPOSE_HTTP_TIMEOUT=$DOCKER_TIMEOUT
+        //                             echo "Attempting to log in to registry..."
+        //                             echo $HARBOR_PASSWORD | docker login $HARBOR_REGISTRY -u $HARBOR_USERNAME --password-stdin
+        //                         '''
                                 
-                                sh '''#!/bin/bash
-                                    set -e
-                                    echo "Pushing image to registry..."
-                                    docker push $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:$IMAGE_TAG
-                                '''
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                         sh '''#!/bin/bash
+        //                             set -e
+        //                             echo "Pushing image to registry..."
+        //                             docker push $HARBOR_REGISTRY/$HARBOR_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+        //                         '''
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     }
     
     post {
