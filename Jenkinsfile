@@ -4,8 +4,8 @@ pipeline {
     environment {
         VENV = 'venv'
         IMAGE_NAME = 'banking-app'
-        // HARBOR_REGISTRY = 'localhost:8085'
-        HARBOR_REGISTRY = 'harbor-registry:8085'
+        HARBOR_REGISTRY = 'localhost:8085'
+        // HARBOR_REGISTRY = 'harbor-registry:8085'
         HARBOR_PROJECT = 'library'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         SONAR_PROJECT_KEY = 'banking-app'
